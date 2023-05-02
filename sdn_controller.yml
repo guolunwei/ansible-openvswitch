@@ -1,0 +1,6 @@
+---
+- hosts: sdn
+  gather_facts: no
+  become: yes
+  roles:
+    - sdn_controller

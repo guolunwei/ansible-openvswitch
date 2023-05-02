@@ -1,0 +1,6 @@
+---
+- hosts: ovs
+  gather_facts: no
+  become: yes
+  roles:
+    - ovs_server

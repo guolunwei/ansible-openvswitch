@@ -1,0 +1,17 @@
+---
+- name: copy jre linux tarball
+  copy:
+    src: server-jre-8u301-linux-x64.tar.gz
+    dest: /tmp/
+
+- name: download odl package
+  get_url:
+    url: https://nexus.opendaylight.org/content/repositories/public/org/opendaylight/integration/karaf/0.7.3/karaf-0.7.3.zip
+    dest: /tmp/karaf-0.7.3.zip
+    checksum: md5:3635647aa1c7e729df94c84624f59881
+    validate_certs: false
+
+- name: install odl via script
+  script: install_odl.sh
+  args:
+    creates: /root/karaf-0.7.3

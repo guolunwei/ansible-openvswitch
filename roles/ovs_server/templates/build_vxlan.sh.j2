@@ -1,0 +1,56 @@
+#!/bin/bash
+#coding:utf-8
+
+vxlan_port=vxlan0
+vni=10001
+
+kvm=$(grep -E "vmx|svm" /proc/cpuinfo > /dev/null && echo OK || echo not OK)
+
+if [[ $kvm == 'OK' ]];then
+  #install kvm related
+  # yum -y install qemu-kvm qemu-img libvirt virt-install
+  yum -y install qemu-kvm qemu-img libvirt
+
+  #check ovs version
+  ovs-vsctl show
+  
+  if [[ $? = 0 ]];then
+    #add ovs bridge
+    ! ovs-vsctl list-br | grep {{ ovs_name }} >/dev/null && ovs-vsctl add-br {{ ovs_name }}
+    #add internal port to connect cloud server
+    ! ovs-vsctl list-ports {{ ovs_name }} | grep {{ if_name }} >/dev/null && ovs-vsctl add-port {{ ovs_name }} {{ if_name }} -- set interface {{ if_name }} type=internal
+    #add vxlan port
+    ! ovs-vsctl list-ports {{ ovs_name }} | grep $vxlan_port >/dev/null && ovs-vsctl add-port {{ ovs_name }} $vxlan_port -- set interface $vxlan_port type=vxlan options:remote_ip={{ remote_ip }} options:key=$vni
+  else
+    echo 'Please install openvswitch first!'
+  fi
+  
+  #check libvirtd service
+  if [[ $(systemctl is-active libvirtd) != "active" ]];then
+    systemctl start libvirtd && systemctl enable libvirtd
+  fi
+
+  #check whether vm creates or not
+  if [[ -z $(virsh list --all | grep {{ vm_name }}) ]];then
+    #create vm
+    # virt-install \
+    # --name {{ vm_name }} \
+    # --ram 128 \
+    # --virt-type kvm \
+    # --vcpus 1 \
+    # --boot cdrom \
+    # --livecd \
+    # --disk none \
+    # --cdrom /tmp/TinyCore-current.iso \
+    # --network bridge={{ ovs_name }},model=virtio,virtualport_type=openvswitch \
+    # --graphics vnc,port=5900,listen=0.0.0.0
+    virsh define /tmp/cloud_vm.xml
+    virsh start {{ vm_name }}
+  else
+    echo '{{ vm_name }} already exists!'
+  fi
+
+else
+  echo 'CPU not support kvm virtualization!'
+
+fi

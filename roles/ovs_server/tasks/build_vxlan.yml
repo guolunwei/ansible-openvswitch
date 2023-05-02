@@ -1,0 +1,21 @@
+---
+- name: download Tinycore image
+  get_url:
+    url: http://www.tinycorelinux.net/14.x/x86/release/TinyCore-current.iso
+    dest: /tmp/TinyCore-current.iso
+    checksum: md5:27c753904b5afe3756ccc91bf032601b
+
+- name: put xml config file
+  template:
+    src: cloud_vm.xml.j2
+    dest: /tmp/cloud_vm.xml
+
+- name: put build_vxlan script
+  template:
+    src: build_vxlan.sh.j2
+    dest: /tmp/build_vxlan.sh
+
+- name: build lab environment
+  shell: bash /tmp/build_vxlan.sh
+  args:
+    creates: /etc/libvirt/qemu/{{ vm_name }}.xml  

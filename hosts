@@ -1,0 +1,10 @@
+[sdn]
+sdn-controller ansible_host=10.0.0.63
+
+[ovs]
+ovs-server01 ansible_host=10.0.0.61
+ovs-server02 ansible_host=10.0.0.62
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python
+ansible_ssh_user=ceeinfra

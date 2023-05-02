@@ -1,0 +1,5 @@
+---
+ovs_name: ovs02
+if_name: if02
+remote_ip: 10.0.0.62
+vm_name: cloud-vm02

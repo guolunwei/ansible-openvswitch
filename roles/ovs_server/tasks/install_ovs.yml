@@ -1,0 +1,11 @@
+---
+- name: build openvswitch rpm and install
+  script: install_ovs.sh
+  args:
+    creates: /var/log/openvswitch/
+
+- name: ensure openvswitch is running
+  systemd:
+    name: openvswitch
+    state: started
+    enabled: true
